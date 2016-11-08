@@ -58,16 +58,8 @@ end
 
 function SObject:getDimensions() return w,h end
 
-function SObject:mousemoved(mx, my, dx, dy, istouch)
-end
 
-function SObject:transformMouse(mx, my)
-  local _r,_u = self:toPolar(mx * self.sx, my * self.sy)
-  local dx,dy =  self:fromPolar(_r, _u + self.r)
-  return dx,dy
-end
-
-function SObject:__mousemoved(mx, my, dx, dy, istouch, x, y, r, sx, sy)
+function SObject:transformMouse(mx, my, x, y, r, sx, sy)
   if not x then x = 0 end
   if not y then y = 0 end
   if not r then r = 0 end
@@ -78,18 +70,37 @@ function SObject:__mousemoved(mx, my, dx, dy, istouch, x, y, r, sx, sy)
   sy = sy * self.sy
   r = r + self.r
   local _r,_u = self:toPolar((mx - x) / sx, (my - y) / sy)
-  if self.mousemoved then
-    self:mousemoved(self:fromPolar(_r, _u - r))
-  end
+  return x,y,r,sx,sy,self:fromPolar(_r, _u - r)
+end
 
+
+
+function SObject:__mousemoved(mx, my, dx, dy, istouch, x, y, r, sx, sy, used)
+  local x,y,r,sx,sy, mx1, my1 = self:transformMouse(mx, my, x, y, r, sx, sy)
+  if self.mousemoved then used = self:mousemoved(mx1, my1, istouch, used) end
   lume.chain(self.childs)
-    :filter(function(c) return not c.off and c.mousemoved and not c.eventoff end)
-    :each(function(c) c:__mousemoved(mx,my,dx,dy,istouch,x,y,r,sx,sy) end)
-  return mx,my
-  end
+    :filter(function(c) return not c.off and c.__mousemoved and not c.eventoff end)
+    :each(function(c) used = c:__mousemoved(mx,my,dx,dy,istouch,x,y,r,sx,sy, used) end)
+  return used
+end
 
--- function SObject:mousepressed(x, y, button, istouch) lume.chain(self.childs):filter(function(c) return not c.off and c.mousepressed and not c.eventoff end):each(function(c) c:mousepressed(x,y,button,istouch) end) end
--- function SObject:mousereleased(x, y, button, istouch) lume.chain(self.childs):filter(function(c) return not c.off and c.mousereleased and not c.eventoff end):each(function(c) c:mousereleased(x,y,button,istouch) end) end
+function SObject:__mousepressed(mx, my, button, istouch, x, y, r, sx, sy, used)
+  local x,y,r,sx,sy, mx1, my1 = self:transformMouse(mx, my, x, y, r, sx, sy)
+  if self.mousepressed then used = self:mousepressed(mx1, my1, button, istouch, used) end
+  lume.chain(self.childs)
+    :filter(function(c) return not c.off and c.__mousepressed and not c.eventoff end)
+    :each(function(c) used = c:__mousepressed(mx, my, button, istouch, x, y, r, sx, sy, used) end)
+  return used
+end
+
+function SObject:__mousereleased(mx, my, button, istouch, x, y, r, sx, sy, used)
+  local x,y,r,sx,sy, mx1, my1 = self:transformMouse(mx, my, x, y, r, sx, sy)
+  if self.mousereleased then used = self:mousereleased(mx1, my1, button, istouch, used) end
+  lume.chain(self.childs)
+    :filter(function(c) return not c.off and c.__mousereleased and not c.eventoff end)
+    :each(function(c) c:__mousereleased(mx, my, button, istouch, x, y, r, sx, sy, used) end)
+end
+
 
 function SObject:keypressed(key, scancode, isrepeat) lume.chain(self.childs):filter(function(c) return not c.off and c.keypressed and not c.eventoff end):each(function(c) c:keypressed(key, scancode, isrepeat) end) end
 function SObject:keyreleased(key) lume.chain(self.childs):filter(function(c) return not c.off and c.keyreleased and not c.eventoff end):each(function(c) c:keyreleased(key) end) end
@@ -104,12 +115,60 @@ function SObject:setH(val) self.h = val; self:refresh() end
 function SObject:setSX(val) self.sx = val; self:refresh() end
 function SObject:setSY(val) self.sy = val; self:refresh() end
 
+local SMouseObject = Class{}
 
-local SMouseObject = Class{
-  init = function(self)
-    self.released = false;
+function SMouseObject:getCollider()
+  if self.collider then return self.collider end
+  return {0, 0, self.w, self.h}
+end
+
+function SMouseObject:getBox()
+  return {-self.w * self.pivot[1],
+          -self.h * self.pivot[2],
+          self.w-self.w * self.pivot[1],
+          self.h-self.h * self.pivot[2]}
+end
+
+function SMouseObject:inBox(x,y)
+  local box = self:getBox()
+  return x >= box[1] and y >= box[2] and x < box[3] and y < box[4]
+end
+
+function SMouseObject:mousepressed(x,y, button, istouch, used)
+  if self.__over and not self.__pressed and not used then
+    self.__pressed = true
+    if self.press then self:press(x,y) end
+    used = true
   end
-}
+  return used
+end
+
+function SMouseObject:mousereleased(x,y, button, istouch, used)
+  if self.__over and self.__pressed and not used then
+    self.__pressed = false
+    if self.over then self:over(x,y) end
+    if self.click and not self.disabled  and self:inBox(x,y) then self:click() end
+    used = true
+  end
+  return used
+end
+
+function SMouseObject:mousemoved(x,y, istouch, used)
+  if self:inBox(x,y) then
+    if not self.__over then
+      self.__over = true
+      if self.over then self:over(x,y) end
+      used = true
+    end
+  else
+    if self.__over or used then
+      self.__over = false
+      self.__pressed = false
+      if self.release then self:release(x,y) end
+    end
+  end
+  return used
+end
 
 
 
@@ -119,13 +178,6 @@ local SSprite = Class{__includes=SObject,
     self:setImg(img)
   end
 }
-
-function SSprite:mousemoved(x,y)
-  if self.debug then
-    log.info("x=", x, "y=", y)
-  end
-end
-
 
 function SSprite:setImg(img)
   self.img = img
@@ -160,27 +212,63 @@ function SSprite:draw(x,y,r,sx,sy, tx, ty)
       love.graphics.draw(img, quad, x, y, r, sx, sy, tx, ty)
     end
   end
-
-  --DEBUG
 end
 
-function SSprite:__draw(x, y, r, sx, sy)
-  SObject.__draw(self, x, y, r, sx, sy)
-  if not x then x = 0 end
-  if not y then y = 0 end
-  if not r then r = 0 end
-  if not sx then sx = 1 end
-  if not sy then sy = 1 end
 
-  -- x1,y1 = self:__mousemoved(-50, -50, x,y,r,sx,sy)
-  -- x2,y2 = self:__mousemoved(50, -50, x,y,r,sx,sy)
-  -- x3,y3 = self:__mousemoved(50, 50, x,y,r,sx,sy)
-  -- x4,y4 = self:__mousemoved(-50, 50, x,y,r,sx,sy)
-  -- log.info(x1, y1, ";", x2, y2, ";", x3,y3, ";", x4,y4, ";", x1,y1)
-  -- love.graphics.line(x1, y1, x2, y2, x3,y3,x4,y4,x1,y1)
+
+local SButton = Class{__includes={SMouseObject, SObject},
+  init = function(self, x, y, states)
+    SObject.init(self, x, y)
+    self.states = states
+    if not self.states.release then error("Release state not set") end
+    if not self.states.over then self.states.over = self.states.release end
+    if not self.states.press then self.states.press = self.states.over end
+    if not self.states.disable then self.states.disable = self.states.release end
+    if not self.states.disablePress then self.states.disablePress = self.states.disable end
+    self.w, self.h = self.states.release.w,self.states.release.h
+    for k,v in pairs(self.states) do self:add(v) end
+    self:state("release")
+  end
+}
+
+
+function SButton:state(state)
+  for k,v in pairs(self.states) do
+    v.off = true
+  end
+  self.states[state].off =false
+end
+
+function SButton:over()
+  if self.disable then
+    self:state("disable")
+  else
+    self:state("over")
+  end
+end
+
+function SButton:press()
+  if self.disable then
+    self:state("disablePress")
+  else
+    self:state("press")
+  end
+end
+
+function SButton:release()
+  if self.disable then
+    self:state("disable")
+  else
+    self:state("release")
+  end
+end
+
+function SButton:click()
+  log.info("Click!")
 end
 
 return {
   SObject = SObject,
-  SSprite = SSprite
+  SSprite = SSprite,
+  SButton = SButton
 }
