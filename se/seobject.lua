@@ -114,6 +114,10 @@ function SObject:setW(val) self.w = val; self:refresh() end
 function SObject:setH(val) self.h = val; self:refresh() end
 function SObject:setSX(val) self.sx = val; self:refresh() end
 function SObject:setSY(val) self.sy = val; self:refresh() end
+function SObject:setPivot(val, y)
+  if type(val) == "number" then self.pivot = {val, y} else self.pivot = val end
+  self:refresh()
+end
 
 local SMouseObject = Class{}
 
@@ -231,6 +235,10 @@ local SButton = Class{__includes={SMouseObject, SObject},
   end
 }
 
+function SButton:setPivot(x,y)
+  SObject.setPivot(self, x,y)
+  for _,v in pairs(self.states) do v:setPivot(x,y) end
+end
 
 function SButton:state(state)
   for k,v in pairs(self.states) do

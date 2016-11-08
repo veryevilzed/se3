@@ -35,7 +35,7 @@ function love.load(arg)
     })
   )
   s4.states.release.debug = true
-
+  s4:setPivot(0,0)
   print(inspect(s4))
 
 end
@@ -47,8 +47,8 @@ function love.draw()
 end
 
 function love.update(dt)
-    s.r = s.r + dt * 0.1
-    s2.r = s2.r - dt * 0.1
+    --s.r = s.r + dt * 0.1
+    --s2.r = s2.r - dt * 0.1
     s4.r = s4.r + dt * 0.2
 end
 
