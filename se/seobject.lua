@@ -220,7 +220,7 @@ end
 
 
 
-local SButton = Class{__includes={SMouseObject, SObject},
+local SButton = Class{__includes={SObject, SMouseObject},
   init = function(self, x, y, states)
     SObject.init(self, x, y)
     self.states = states
