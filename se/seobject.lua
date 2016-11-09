@@ -17,6 +17,8 @@ local SObject = Class{
 
 function SObject:add(child) lume.push(self.childs, child); return child end
 
+
+
 function SObject:fromPolar(r,u) return r * math.cos(u), r * math.sin(u) end
 function SObject:toPolar(x,y)
   local r = math.sqrt(y*y + x*x)
@@ -122,19 +124,16 @@ function SObject:__update(dt)
     :filter(function(c) return not c.off and c.__update end)
     :each(function(c) c:__update(dt) end)
 end
-function SObject:refresh() if self.parent and self.parent.refresh then self.parent:refresh() end end
-function SObject:setX(val) self.x = val; self:refresh(); return self end
-function SObject:setY(val) self.y = val; self:refresh(); return self end
-function SObject:setR(val) self.r = val; self:refresh(); return self end
-function SObject:setW(val) self.w = val; self:refresh(); return self end
-function SObject:setH(val) self.h = val; self:refresh(); return self end
-function SObject:setSX(val) self.sx = val; self:refresh(); return self end
-function SObject:setSY(val) self.sy = val; self:refresh(); return self end
-function SObject:setPivot(val, y)
-  if type(val) == "number" then self.pivot = {val, y} else self.pivot = val end
-  self:refresh()
-  return self
-end
+function SObject:refresh() if self.parent and self.parent.refresh then self.parent:refresh() end; return self end
+function SObject:setX(val) self.x = val; return self:refresh() end
+function SObject:setY(val) self.y = val; return self:refresh() end
+function SObject:setR(val) self.r = val; return self:refresh() end
+function SObject:setW(val) self.w = val; return self:refresh() end
+function SObject:setH(val) self.h = val; return self:refresh() end
+function SObject:setSX(val) self.sx = val; return self:refresh() end
+function SObject:setSY(val) self.sy = val; return self:refresh() end
+function SObject:setSize(w,h) if not h then h=w end; self.sx, self.sy = w/self.w, h/self.h; return self:refresh() end
+function SObject:setPivot(val, y) if type(val) == "number" then self.pivot = {val, y} else self.pivot = val end return self:refresh() end
 
 local SGroup = Class{__includes=SObject,
   init = function(self, x,y, items)

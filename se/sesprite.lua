@@ -7,6 +7,8 @@ local SSprite = Class{__includes={SObject},
   end
 }
 
+function SSprite:setColor(color) self.color = color; return self:refresh() end
+
 function SSprite:setImg(img)
   self.img = img
   if self.img == nil then
@@ -40,11 +42,13 @@ function SSprite:draw(x,y,r,sx,sy, tx, ty)
   if not self.hidden then
     local img, quad = self:getImg()
     if img == nil then return end
+    if self.color then love.graphics.setColor(self.color) end
     if not quad then
       love.graphics.draw(img, x, y, r, sx, sy, tx, ty)
     else
       love.graphics.draw(img, quad, x, y, r, sx, sy, tx, ty)
     end
+    if self.color then love.graphics.setColor(255, 255, 255, 255) end
   end
 end
 
@@ -89,7 +93,7 @@ end
 function SAnimator:update(dt)
   if self.__curent_frame and self.__curent_frame.delay then
     self.__curent_frame.delay = self.__curent_frame.delay - dt
-    if self.__curent_frame.delay <=0 then self:nextFrame(self.__curent_frame.delay) end
+    if self.__curent_frame.delay <= 0 then self:nextFrame(self.__curent_frame.delay) end
   end
 end
 

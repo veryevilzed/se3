@@ -45,6 +45,7 @@ function love.load(arg)
   }, nil, "fnt", "?")
   s3.keys = {"a","space"}
   s3.clickByDown = true
+
   s3.click = function()
     if not s3.i then s3.i = 0 end
     s3:setText(s3:getText()..s3.i)

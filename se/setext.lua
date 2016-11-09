@@ -31,11 +31,7 @@ function SText:setText(text)
   return self
 end
 
-function SText:setColor(color)
-  self.color = color
-  self:refresh();
-  return self
-end
+function SText:setColor(color) self.color = color; return self:refresh() end
 
 function SText:setFont(font)
   log.info("set font", font)
