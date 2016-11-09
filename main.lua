@@ -36,13 +36,13 @@ function love.load(arg)
   -- t3:setMaxWidth(300)
   -- t3:setPivot(0,0.5)
 
+  c = SCanvas(100,100, nil, {600, 600})
 
-
-  s3 = SSpriteButton(100,100, {
+  s3 = c:add(SSpriteButton(100,100, {
     release = "1",
     over = "over",
     press ="press"
-  }, nil, "fnt", "?")
+  }, nil, "fnt", "?"))
   s3.keys = {"a","space"}
   s3.clickByDown = true
 
@@ -53,15 +53,15 @@ function love.load(arg)
   end
   s3:setTextStyle({release={}, press={dy=5, color={255,255,255,200}}})
 
-  s = s3
+  s = c
   k = s:add(SEmptyButton())
   k.keys = {"backspace", "v"}
   k.click = function()
     s3:setText("")
   end
 
-  s4 = s3:add(SAnimationSprite({"1","over","press"}, 100, 100))
-  s4:setFont("fnt"):setText("Hello")
+  -- s4 = s3:add(SAnimationSprite({"1","over","press"}, 100, 100))
+  -- s4:setFont("fnt"):setText("Hello")
 
   -- s = SSpriteButton(100, 100, {
   --   release = "1",

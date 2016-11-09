@@ -48,7 +48,6 @@ function SText:getFont()
   end
 end
 
-
 function SText:draw(x,y,r,sx,sy, tx, ty)
   if not self.hidden or not self.text or self.text == "" then
     local font = self:getFont()

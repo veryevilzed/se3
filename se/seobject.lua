@@ -1,7 +1,7 @@
 
 
 local SObject = Class{
-  init = function(self, x, y)
+  init = function(self, x, y, items)
     self.x = x or 0
     self.y = y or 0
     self.r = 0
@@ -11,11 +11,12 @@ local SObject = Class{
     self.w = 0
     self.h = 0
     self.childs = {}
+    if items then lume.each(items, function(i) self:add(i) end) end
     self.pivot = {0.5, 0.5}
   end
 }
 
-function SObject:add(child) lume.push(self.childs, child); return child end
+function SObject:add(child) lume.push(self.childs, child); child.parent = self; return child end
 
 
 
@@ -135,12 +136,7 @@ function SObject:setSY(val) self.sy = val; return self:refresh() end
 function SObject:setSize(w,h) if not h then h=w end; self.sx, self.sy = w/self.w, h/self.h; return self:refresh() end
 function SObject:setPivot(val, y) if type(val) == "number" then self.pivot = {val, y} else self.pivot = val end return self:refresh() end
 
-local SGroup = Class{__includes=SObject,
-  init = function(self, x,y, items)
-    SObject.init(self,x,y)
-    if items then lume.each(items, function(i) self:add(i) end) end
-  end
-}
+local SGroup = SObject
 
 local SMouseObject = Class{}
 function SMouseObject:getCollider()
@@ -227,11 +223,56 @@ function SKeyboardObject:keyreleased(key, used)
   return used
 end
 
+local SCanvas = Class{__includes=SObject,
+  init = function(self,x,y,items, canvasSize)
+    SObject.init(self,x,y,items)
+    self.canvas = love.graphics.newCanvas(canvasSize[0], canvasSize[1])
+  end
+}
+
+function SCanvas:refresh()
+  self.canvas_notchanged = false
+  SObject.refresh(self)
+end
+
+function SCanvas:__draw(x, y, r, sx, sy)
+  if not self.canvas_notchanged then
+    love.graphics.setCanvas(self.canvas)
+    love.graphics.clear()
+    SObject.__draw(self,x, y, r, sx, sy)
+    love.graphics.setCanvas()
+  else
+    if not x then x = 0 end
+    if not y then y = 0 end
+    if not r then r = 0 end
+    if not sx then sx = 1 end
+    if not sy then sy = 1 end
+    x,y,r = self:transform(x,y,r, sx, sy)
+    sx = sx * self.sx
+    sy = sy * self.sy
+    r = r + self.r
+    if self.draw then
+      self:draw(x, y, r, sx, sy, (self.w * self.pivot[1]) , (self.h * self.pivot[2]))
+    end
+  end
+end
+
+function SCanvas:draw(x,y,r,sx,sy, tx, ty)
+  if not self.canvas_notchanged then
+    print("create canvas")
+    self.canvas_notchanged = true
+    SObject.draw(self,x,y,r,sx,sy, tx, ty)
+  else
+    print("draw canvas")
+    love.graphics.draw(self.canvas, 0,0)
+  end
+end
 
 
 return {
   SObject = SObject,
   SGroup = SGroup,
   SMouseObject = SMouseObject,
-  SKeyboardObject = SKeyboardObject
+  SKeyboardObject = SKeyboardObject,
+  SCanvas = SCanvas
 }

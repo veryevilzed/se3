@@ -26,6 +26,7 @@ function SSprite:setImg(img)
   else
     self.w, self.h = self.img:getDimensions()
   end
+  return self:refresh()
 end
 
 function SSprite:getImg()
