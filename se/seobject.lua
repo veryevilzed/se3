@@ -136,6 +136,13 @@ function SObject:setPivot(val, y)
   return self
 end
 
+local SGroup = Class{__includes=SObject,
+  init = function(self, x,y, items)
+    SObject.init(self,x,y)
+    if items then lume.each(items, function(i) self:add(i) end) end
+  end
+}
+
 local SMouseObject = Class{}
 function SMouseObject:getCollider()
   if self.collider then return self.collider end
@@ -225,6 +232,7 @@ end
 
 return {
   SObject = SObject,
+  SGroup = SGroup,
   SMouseObject = SMouseObject,
   SKeyboardObject = SKeyboardObject
 }

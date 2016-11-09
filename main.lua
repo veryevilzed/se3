@@ -66,7 +66,6 @@ function love.load(arg)
   -- s.debug = true
   -- s.keys = {"space", "k"}
   -- print(inspect(s))
-
 end
 
 function love.draw()

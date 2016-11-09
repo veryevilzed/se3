@@ -2,8 +2,10 @@
 local ROOT = (...):gsub('[^.]*$', '')
 
 SObject =         require(ROOT .. "seobject").SObject
+SGroup =          require(ROOT .. "seobject").SGroup
 
-SText =         require(ROOT .. "setext").SText
+SText =           require(ROOT .. "setext").SText
+STextObject =     require(ROOT .. "setext").STextObject
 
 SMouseObject =    require(ROOT .. "seobject").SMouseObject
 SKeyboardObject = require(ROOT .. "seobject").SKeyboardObject

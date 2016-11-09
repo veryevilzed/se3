@@ -69,7 +69,38 @@ function SText:draw(x,y,r,sx,sy, tx, ty)
   end
 end
 
+local STextObject = Class{}
+
+function STextObject:setFont(font)
+  if not font then return end
+  if not self.__text_object then
+    self.__text_object = self:add(SText(0,0, font, self.__text_object_text or ""))
+    self.__text_object:setMaxWidth(self.w)
+    self.__text_object.align = "center"
+  else
+    self.__text_object:setFont(font)
+  end
+  return self
+end
+
+function STextObject:setTextColor(color)
+  self.__text_object:setColor(color)
+  return self
+end
+function STextObject:getText() return self.__text_object_text or "" end
+function STextObject:setText(text)
+  self.__text_object_text = text
+  if not self.__text then return end
+  self.__text_object:setText(self.__text_object_text)
+  self.__text_object:setMaxWidth(self.w)
+  return self
+end
+
+function STextObject:getTextObject()
+  return self.__text_object
+end
 
 return {
-  SText = SText
+  SText = SText,
+  STextObject = STextObject
 }

@@ -100,6 +100,10 @@ local SAnimationSprite = Class{__includes={ SSprite, SAnimator},
   end
 }
 
+
+local STextSprite = Class{__includes={ SSprite }
+}
+
 return {
   SSprite = SSprite,
   SAnimator = SAnimator,
