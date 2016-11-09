@@ -102,8 +102,19 @@ function SObject:__mousereleased(mx, my, button, istouch, x, y, r, sx, sy, used)
 end
 
 
-function SObject:keypressed(key, scancode, isrepeat) lume.chain(self.childs):filter(function(c) return not c.off and c.keypressed and not c.eventoff end):each(function(c) c:keypressed(key, scancode, isrepeat) end) end
-function SObject:keyreleased(key) lume.chain(self.childs):filter(function(c) return not c.off and c.keyreleased and not c.eventoff end):each(function(c) c:keyreleased(key) end) end
+function SObject:__keypressed(key, scancode, isrepeat, used)
+  if self.keypressed then used = self:keypressed(key, scancode, isrepeat, used) end
+  lume.chain(self.childs)
+    :filter(function(c) return not c.off and c.__keypressed and not c.eventoff end)
+    :each(function(c) used = c:__keypressed(key, scancode, isrepeat, used) end)
+end
+
+function SObject:__keyreleased(key, used)
+  if self.keyreleased then used = self:keyreleased(key, used) end
+  lume.chain(self.childs)
+    :filter(function(c) return not c.off and c.__keyreleased and not c.eventoff end)
+    :each(function(c) used = c:__keyreleased(key, used) end)
+  end
 
 function SObject:update(dt) lume.chain(self.childs):filter(function(c) return not c.off and c.update end):each(function(c) c:update(dt) end) end
 function SObject:refresh() if self.parent and self.parent.refresh then self.parent:refresh() end end
@@ -120,7 +131,6 @@ function SObject:setPivot(val, y)
 end
 
 local SMouseObject = Class{}
-
 function SMouseObject:getCollider()
   if self.collider then return self.collider end
   return {0, 0, self.w, self.h}
@@ -174,109 +184,41 @@ function SMouseObject:mousemoved(x,y, istouch, used)
   return used
 end
 
+local SKeyboardObject = Class{}
 
-
-local SSprite = Class{__includes=SObject,
-  init = function(self, img, x, y)
-    SObject.init(self, x, y)
-    self:setImg(img)
+function SKeyboardObject:keypressed(key, scancode, isrepeat, used)
+  if not self.keys or not lume.any(self.keys, function(k) return k == key end) then
+    return used
   end
-}
-
-function SSprite:setImg(img)
-  self.img = img
-  if type(self.img) == "string" then
-      local txt, quad, rect, _, offset = resource:get(self.img)
-      if not quad then
-        self.w, self.h = txt:getDimensions()
-      else
-        self.w, self.h = rect[3], rect[4]
-      end
-  else
-    self.w, self.h = self.img:getDimensions()
+  if not isrepeat then
+    if self.press then self:press() end
+    if self.down then self:down(key, scancode) end
+    if self.clickByDown and not used and self.click then self:click(); end
+    used = true
   end
-end
-
-function SSprite:getImg()
-  if type(self.img) == "string" then
-    local txt, quad, rect, _, offset = resource:get(self.img)
-    return txt, quad
-  else
-    return self.img, nil
-  end
+  self.__keydown = true
+  return used
 end
 
 
-function SSprite:draw(x,y,r,sx,sy, tx, ty)
-  if not self.hidden then
-    local img, quad = self:getImg()
-    if not quad then
-      love.graphics.draw(img, x, y, r, sx, sy, tx, ty)
-    else
-      love.graphics.draw(img, quad, x, y, r, sx, sy, tx, ty)
-    end
+function SKeyboardObject:keyreleased(key, used)
+  if not self.keys or not lume.any(self.keys, function(k) return k == key end) then
+    return used
   end
-end
-
-
-
-local SButton = Class{__includes={SObject, SMouseObject},
-  init = function(self, x, y, states)
-    SObject.init(self, x, y)
-    self.states = states
-    if not self.states.release then error("Release state not set") end
-    if not self.states.over then self.states.over = self.states.release end
-    if not self.states.press then self.states.press = self.states.over end
-    if not self.states.disable then self.states.disable = self.states.release end
-    if not self.states.disablePress then self.states.disablePress = self.states.disable end
-    self.w, self.h = self.states.release.w,self.states.release.h
-    for k,v in pairs(self.states) do self:add(v) end
-    self:state("release")
+  if self.release then self:release() end
+  if self.up then self:up(key) end
+  if not self.clickByDown and not used and self.click and self.__keydown then
+    self.__keydown = false
+    self:click()
+    used = true
   end
-}
-
-function SButton:setPivot(x,y)
-  SObject.setPivot(self, x,y)
-  for _,v in pairs(self.states) do v:setPivot(x,y) end
+  return used
 end
 
-function SButton:state(state)
-  for k,v in pairs(self.states) do
-    v.off = true
-  end
-  self.states[state].off =false
-end
 
-function SButton:over()
-  if self.disable then
-    self:state("disable")
-  else
-    self:state("over")
-  end
-end
-
-function SButton:press()
-  if self.disable then
-    self:state("disablePress")
-  else
-    self:state("press")
-  end
-end
-
-function SButton:release()
-  if self.disable then
-    self:state("disable")
-  else
-    self:state("release")
-  end
-end
-
-function SButton:click()
-  log.info("Click!")
-end
 
 return {
   SObject = SObject,
-  SSprite = SSprite,
-  SButton = SButton
+  SMouseObject = SMouseObject,
+  SKeyboardObject = SKeyboardObject
 }

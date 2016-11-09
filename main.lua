@@ -1,14 +1,15 @@
 
 
 Class = require("hump.class")
+Signal = require("hump.signal")
 lume = require("lume")
 inspect = require("inspect")
 log = require("log")
 resource = require("resource")()
 
 
-SSprite = require("se.seobject").SSprite
-SButton = require("se.seobject").SButton
+require("se.se3")
+
 
 function love.load(arg)
   resource:load("asset/1.png", "1", true)
@@ -34,9 +35,28 @@ function love.load(arg)
       press = SSprite("press",0,0)
     })
   )
-  s4.states.release.debug = true
-  s4:setPivot(0,0)
-  print(inspect(s4))
+  s4.keys = {"a"}
+  --s4.states.release.debug = true
+  --s4:setPivot(0,0)
+
+  s5 = s4:add(SSpriteButton(100, 100, {
+    release = "1",
+    over = "over",
+    press = "press"
+  }))
+  s5.keys = {"s"}
+  s5.debug = true
+  --s5:setPivot(0,0)
+
+
+  -- s = SSpriteButton(100, 100, {
+  --   release = "1",
+  --   over = "over",
+  --   press = "press"
+  -- })
+  -- s.debug = true
+  -- s.keys = {"space", "k"}
+  -- print(inspect(s))
 
 end
 
@@ -48,7 +68,7 @@ end
 
 function love.update(dt)
     --s.r = s.r + dt * 0.1
-    --s2.r = s2.r - dt * 0.1
+    s2.r = s2.r - dt * 0.1
     s4.r = s4.r + dt * 0.2
 end
 
@@ -62,4 +82,13 @@ end
 
 function love.mousereleased(x, y, button, istouch)
   s:__mousereleased(x, y, button, istouch)
+end
+
+
+function love.keypressed(key, scancode, isrepeat)
+  s:__keypressed(key, scancode, isrepeat)
+end
+
+function love.keyreleased(key)
+  s:__keyreleased(key)
 end
