@@ -48,6 +48,8 @@ function love.load(arg)
   s5.debug = true
   --s5:setPivot(0,0)
 
+  s6 = s5:add(SAnimationSprite({"1", "over", "press", "over"}, 100,100))
+
 
   -- s = SSpriteButton(100, 100, {
   --   release = "1",
@@ -67,6 +69,7 @@ function love.draw()
 end
 
 function love.update(dt)
+  s:__update(dt)
     --s.r = s.r + dt * 0.1
     s2.r = s2.r - dt * 0.1
     s4.r = s4.r + dt * 0.2

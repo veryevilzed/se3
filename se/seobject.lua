@@ -116,7 +116,12 @@ function SObject:__keyreleased(key, used)
     :each(function(c) used = c:__keyreleased(key, used) end)
   end
 
-function SObject:update(dt) lume.chain(self.childs):filter(function(c) return not c.off and c.update end):each(function(c) c:update(dt) end) end
+function SObject:__update(dt)
+  if self.update then self:update(dt) end
+  lume.chain(self.childs)
+    :filter(function(c) return not c.off and c.__update end)
+    :each(function(c) c:__update(dt) end)
+end
 function SObject:refresh() if self.parent and self.parent.refresh then self.parent:refresh() end end
 function SObject:setX(val) self.x = val; self:refresh() end
 function SObject:setY(val) self.y = val; self:refresh() end
