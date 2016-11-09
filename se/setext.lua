@@ -54,7 +54,7 @@ end
 
 
 function SText:draw(x,y,r,sx,sy, tx, ty)
-  if not self.hidden then
+  if not self.hidden or not self.text or self.text == "" then
     local font = self:getFont()
     if font == nil then return end
     if self.color then love.graphics.setColor(self.color) end

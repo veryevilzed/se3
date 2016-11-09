@@ -96,6 +96,7 @@ end
 local SAnimationSprite = Class{__includes={SSprite, SAnimator, STextObject},
   init = function(self, sequence, x, y, delay)
     SSprite.init(self,nil, x,y)
+    if type(sequence) == "string" then sequence = {sequence} end
     SAnimator.init(self,sequence,delay)
   end
 }
