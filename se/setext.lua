@@ -12,6 +12,7 @@ local SText = Class{__includes=SObject,
 function SText:setMaxWidth(val)
   self.maxWidth = val
   self:setText(self.text)
+  self:refresh();
   return self
 end
 
@@ -23,7 +24,6 @@ function SText:setText(text)
     local _width, _wrapedtext = resource:getFont("fnt"):getWrap( self.text, self.maxWidth )
     self.w = self.maxWidth -- _width
     self.h = #_wrapedtext * font:getHeight() + #_wrapedtext * font:getLineHeight()
-    print("#_wrapedtext",#_wrapedtext, "fh", font:getHeight() )
   else
     self.w = font:getWidth(text)
     self.h = font:getHeight()
@@ -33,12 +33,14 @@ end
 
 function SText:setColor(color)
   self.color = color
+  self:refresh();
   return self
 end
 
 function SText:setFont(font)
   log.info("set font", font)
   self.font = font
+  self:refresh();
   return self
 end
 
@@ -84,13 +86,12 @@ function STextObject:setFont(font)
 end
 
 function STextObject:setTextColor(color)
-  self.__text_object:setColor(color)
-  return self
+  self.__text_object:setColor(color); return self
 end
 function STextObject:getText() return self.__text_object_text or "" end
 function STextObject:setText(text)
   self.__text_object_text = text
-  if not self.__text then return end
+  if not self.__text_object then return end
   self.__text_object:setText(self.__text_object_text)
   self.__text_object:setMaxWidth(self.w)
   return self

@@ -1,6 +1,6 @@
 
 
-local SSprite = Class{__includes=SObject,
+local SSprite = Class{__includes={SObject},
   init = function(self, img, x, y)
     SObject.init(self, x, y)
     self:setImg(img)
@@ -93,15 +93,19 @@ function SAnimator:update(dt)
   end
 end
 
-local SAnimationSprite = Class{__includes={ SSprite, SAnimator},
+local SAnimationSprite = Class{__includes={SSprite, SAnimator, STextObject},
   init = function(self, sequence, x, y, delay)
     SSprite.init(self,nil, x,y)
     SAnimator.init(self,sequence,delay)
   end
 }
 
-
-local STextSprite = Class{__includes={ SSprite }
+local STextSprite = Class{__includes={ SSprite, STextObject },
+  init = function(self, img, x, y, font, text)
+    SSprite.init(self,img, x, y, font, text)
+    if font then self:setFont(font) end
+    if text then self:setText(text) end
+  end
 }
 
 return {

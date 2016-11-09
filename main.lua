@@ -42,7 +42,7 @@ function love.load(arg)
     release = "1",
     over = "over",
     press ="press"
-  }, nil, "fnt", "Хуй")
+  }, nil, "fnt", "?")
   s3.keys = {"a","space"}
   s3.clickByDown = true
   s3.click = function()
@@ -58,6 +58,10 @@ function love.load(arg)
   k.click = function()
     s3:setText("")
   end
+
+  s4 = s3:add(SAnimationSprite({"1","over","press"}, 100, 100))
+  s4:setFont("fnt"):setText("Hello")
+
   -- s = SSpriteButton(100, 100, {
   --   release = "1",
   --   over = "over",
