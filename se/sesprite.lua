@@ -93,7 +93,6 @@ function SAnimator:update(dt)
   end
 end
 
-
 local SAnimationSprite = Class{__includes={ SSprite, SAnimator},
   init = function(self, sequence, x, y, delay)
     SSprite.init(self,nil, x,y)

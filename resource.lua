@@ -12,8 +12,11 @@ local Resource = Class{
 }
 
 function Resource:atlas(path, name, w, h, horizontal_orientation, trim_count)
-  -- self.txt[path] = love.graphics.newImage(path)
-  loader.newImage(self.txt, path, path)
+  if self.notLoad then
+     self.txt[path] = love.graphics.newImage(path)
+  else
+     loader.newImage(self.txt, path, path)
+  end
   local tw,th = self.txt[path]:getDimensions()
   local countX = math.floor(tw / w)
   local countY = math.floor(th / h)
@@ -171,21 +174,26 @@ end
 
 function Resource:loadFont(path, name, size)
   if size then
-    -- self.fonts[name] = love.graphics.newFont(path, size)
-    loader.newFont(self.fonts, name, path, size)
+    if self.notLoad then
+      self.fonts[name] = love.graphics.newFont(path, size)
+    else
+      loader.newFont(self.fonts, name, path, size)
+    end
   else
-    -- self.fonts[name] = love.graphics.newFont(path)
-    loader.newFont(self.fonts, name, path)
+    if self.notLoad then
+      self.fonts[name] = love.graphics.newFont(path, size)
+    else
+      loader.newFont(self.fonts, name, path)
+    end
   end
 end
 
-function Resource:load(path, name, woloader)
+function Resource:load(path, name)
   log.debug("load", path, "at", name)
-
-  if woloader then
-    self.res[name] = lg.newImage(path)
+  if self.notLoad then
+     self.res[name] = lg.newImage(path)
   else
-    loader.newImage(self.res, name, path)
+     loader.newImage(self.res, name, path)
   end
   return self
 end
@@ -232,46 +240,61 @@ function Resource:getH(name)
 local _,_,_,h = self:getDimensions(name)
   return h
 end
-function Resource:start(allLoadedCallback, oneLoadedCallback, oneLoadedDrawCallback)
+
+function Resource:setCallbacks(allLoadedCallback, oneLoadedCallback, oneLoadedDrawCallback)
+  if allLoadedCallback then self.onAllLoaded = allLoadedCallback end
+  if oneLoadedCallback then self.onOneLoaded = oneLoadedCallback end
+  if oneLoadedDrawCallback then self.onLoadingDraw = oneLoadedDrawCallback end
+end
+
+function Resource:start(scene)
   self.loaded = false
   loader.start(function()
-    allLoadedCallback()
+    if self.onAllLoaded then
+      self.onAllLoaded()
+    end
     self.loaded=true
-  end, oneLoadedCallback)
-  self.onLoadingDraw = oneLoadedDrawCallback
+    if scene.start then scene:start() end
+  end, self.onOneLoaded)
 end
 
 function Resource:update()
   loader.update()
 end
 
-function Resource:draw(name, x, y, r, sx, sy, tx, ty)
-  if self.loaded then
-    if not x then x = 0 end
-    if not y then y = 0 end
-    if not r then r = 0 end
-    if not sx then sx = 1 end
-    if not sy then sy = 1 end
-    if not tx then tx = 0 end
-    if not ty then ty = 0 end
-    local txt, quad, rect, _, offset = self:get(name)
-    if not offset then offset = {0,0,0,0} end
-    if quad then
-      if not txt then log.error("txt is null:", name) end
-      lg.draw(txt,quad,x+offset[1],y+offset[2],r,sx,sy,tx,ty)
-      return rect[3], rect[4]
-    else
-      if not txt then log.error("txt is null:", name) end
-      lg.draw(txt,x,y,r,sx,sy,tx,ty)
-      return txt:getDimensions()
-    end
+function Resource:_draw (name, x, y, r, sx, sy)
+  if not x then x = 0 end
+  if not y then y = 0 end
+  if not r then r = 0 end
+  if not sx then sx = 1 end
+  if not sy then sy = 1 end
+   local txt, quad, rect, _, offset = self:get(name)
+  if not offset then offset = {0,0,0,0} end
+  if quad then
+    if not txt then log.error("txt is null:", name) end
+    lg.draw(txt,quad,x+offset[1],y+offset[2],r,sx,sy)
+    return rect[3], rect[4]
   else
-    self.onLoadingDraw()
+    if not txt then log.error("txt is null:", name) end
+    lg.draw(txt,x,y,r,sx,sy)
+    return txt:getDimensions()
+  end
+end
+
+function Resource:draw(name, x, y, r, sx, sy)
+  if self.notLoad or self.loaded then
+    self:_draw(name, x, y, r, sx, sy)
+  else
+    -- print("splash",
+    -- self:_draw("splash"))
+    if self.onLoadingDraw then
+      self.onLoadingDraw()
+    end
   end
 end
 
 function Resource:drawFont(name, text, x, y, limit, align, r, sx, sy)
-  if self.loaded then
+  if self.notLoad or self.loaded then
 
     if not x then x = 0 end
     if not y then y = 0 end

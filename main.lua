@@ -12,11 +12,12 @@ require("se.se3")
 
 
 function love.load(arg)
-  resource:load("asset/1.png", "1", true)
-  resource:load("asset/1.png", "release", true)
-  resource:load("asset/press.png", "press", true)
-  resource:load("asset/over.png", "over", true)
-
+  resource.notLoad = true
+  resource:load("asset/1.png", "1")
+  resource:load("asset/1.png", "release")
+  resource:load("asset/press.png", "press")
+  resource:load("asset/over.png", "over")
+  resource:loadFont("asset/cashout_green.fnt", "fnt")
 
   s = SSprite("release", 100,100)
   --s.r = (math.pi / 180) * 5
@@ -27,28 +28,30 @@ function love.load(arg)
   --s2.debug = true
   s2.r = (math.pi / 180) * 5
   s2.pivot = {0.5,0.5}
+  t1 = s2:add(SText(100, 100, "fnt", "Hello World"))
+  t1.align = "right"
+  t1:setMaxWidth(100)
 
-  s4 = s2:add(
-    SButton(100,100, {
-      release = SSprite("1",0,0),
-      over = SSprite("over",0,0),
-      press = SSprite("press",0,0)
-    })
-  )
-  s4.keys = {"a"}
-  --s4.states.release.debug = true
-  --s4:setPivot(0,0)
+  t2 = s2:add(SText(100, 100, "fnt", "Hello World"))
 
-  s5 = s4:add(SSpriteButton(100, 100, {
-    release = "1",
-    over = "over",
-    press = "press"
-  }))
-  s5.keys = {"s"}
-  s5.debug = true
-  --s5:setPivot(0,0)
+  t2:setMaxWidth(100)
+  t3 = s2:add(SText(100, 100, "fnt", "Hello World-------"))
+  t3.align = "left"
+  t3:setMaxWidth(300)
+  t3:setPivot(0,0.5)
 
-  s6 = s5:add(SAnimationSprite({"1", "over", "press", "over"}, 100,100))
+
+  -- s3 = s2:add(SSpriteButton(50,50, {
+  --   release = "1",
+  --   over = "over",
+  --   press ="press"
+  -- }))
+  -- s3.keys = {"a","space"}
+  -- s3.clickByDown = true
+  -- s3.click = function()
+  --   print "Hello"
+  -- end
+
 
 
   -- s = SSpriteButton(100, 100, {
@@ -66,13 +69,33 @@ function love.draw()
   s:__draw()
   love.graphics.line(100,0,100,500)
   love.graphics.line(0,100,500,100)
+  love.graphics.setFont(resource:getFont("fnt"))
+  local t = "HELLO WORLD"
+  local wl = 190
+  width, wrapedtext = resource:getFont("fnt"):getWrap( t, wl )
+  local line_height = resource:getFont("fnt"):getLineHeight( )
+  local font_height = resource:getFont("fnt"):getHeight( )
+  --print(#wrapedtext * font_height + #wrapedtext * line_height)
+  -- _width = lume.reduce(wrapedtext, function(acc, item)
+  --     local w = resource:getFont("fnt"):getWidth(item)
+  --     if acc < w then
+  --       return w
+  --     else
+  --       return acc
+  --     end
+  --   end, 0)
+  --love.graphics.rectangle("line", 10, 10, width, #wrapedtext * font_height + #wrapedtext * line_height)
+  --love.graphics.printf(t, 10, 10, wl, "right", 0, 1, 1, 0, 0)
 end
 
 function love.update(dt)
   s:__update(dt)
     --s.r = s.r + dt * 0.1
-    s2.r = s2.r - dt * 0.1
-    s4.r = s4.r + dt * 0.2
+    --s2.r = s2.r - dt * 0.1
+    --s4.r = s4.r + dt * 0.2
+    t1.r =  t1.r + dt * 0.4
+    t2.r =  t2.r + dt * 0.4
+    t3.r =  t3.r + dt * 0.4
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
