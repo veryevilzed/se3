@@ -123,16 +123,17 @@ function SObject:__update(dt)
     :each(function(c) c:__update(dt) end)
 end
 function SObject:refresh() if self.parent and self.parent.refresh then self.parent:refresh() end end
-function SObject:setX(val) self.x = val; self:refresh() end
-function SObject:setY(val) self.y = val; self:refresh() end
-function SObject:setR(val) self.r = val; self:refresh() end
-function SObject:setW(val) self.w = val; self:refresh() end
-function SObject:setH(val) self.h = val; self:refresh() end
-function SObject:setSX(val) self.sx = val; self:refresh() end
-function SObject:setSY(val) self.sy = val; self:refresh() end
+function SObject:setX(val) self.x = val; self:refresh(); return self end
+function SObject:setY(val) self.y = val; self:refresh(); return self end
+function SObject:setR(val) self.r = val; self:refresh(); return self end
+function SObject:setW(val) self.w = val; self:refresh(); return self end
+function SObject:setH(val) self.h = val; self:refresh(); return self end
+function SObject:setSX(val) self.sx = val; self:refresh(); return self end
+function SObject:setSY(val) self.sy = val; self:refresh(); return self end
 function SObject:setPivot(val, y)
   if type(val) == "number" then self.pivot = {val, y} else self.pivot = val end
   self:refresh()
+  return self
 end
 
 local SMouseObject = Class{}
